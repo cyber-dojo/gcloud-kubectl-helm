@@ -1,5 +1,6 @@
-# General
-.DS_Store
-
-# Secrets
-gcp/
+*
+!.dockerignore
+!.gitignore
+!Dockerfile
+!build.bash
+!README.md

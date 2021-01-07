@@ -1,11 +1,5 @@
 FROM docker:latest
 
-ENV KEYFILE=example/gcp-credentials.json
-ENV PROJECT=
-ENV ZONE=
-ENV CLUSTER=
-ENV SERVICE_ACCOUNT=
-
 WORKDIR /root
 
 # System
@@ -15,25 +9,24 @@ RUN apk update && apk add --no-cache --virtual .build-deps \
     tar \
     bash \
     openssl \
-    python \
+    python3 \
     git
 
-# GCloud SDK
-RUN curl -OL https://dl.google.com/dl/cloudsdk/channels/rapid/install_google_cloud_sdk.bash && \
-    bash install_google_cloud_sdk.bash --disable-prompts --install-dir='/root/' && \
-    ln -s /root/google-cloud-sdk/bin/gcloud /usr/local/bin/gcloud
+# from https://github.com/dtzar/helm-kubectl/blob/master/Dockerfile
+# Note: Latest version of kubectl may be found at:
+# https://github.com/kubernetes/kubernetes/releases
+ENV KUBE_LATEST_VERSION="v1.20.1"
+# Note: Latest version of helm may be found at
+# https://github.com/kubernetes/helm/releases
+ENV HELM_VERSION="v3.3.1"
 
-# Kubectl
-RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && \
-    chmod +x ./kubectl && \
-    mv ./kubectl /usr/local/bin/kubectl
+RUN apk add --no-cache ca-certificates bash git openssh curl \
+    && wget -q https://storage.googleapis.com/kubernetes-release/release/${KUBE_LATEST_VERSION}/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl \
+    && chmod +x /usr/local/bin/kubectl \
+    && wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xzO linux-amd64/helm > /usr/local/bin/helm \
+    && chmod +x /usr/local/bin/helm \
+    && chmod g+rwx /root \
+    && mkdir /config \
+    && chmod g+rwx /config
 
-# Helm
-RUN curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get | bash
-
-# Authenticate
-RUN mkdir -p /gcp
-COPY authenticate.bash /root/authenticate.bash
-COPY $KEYFILE /gcp/gcp-credentials.json
-
-CMD ["/bin/bash"]
+CMD [ "/bin/bash" ]
