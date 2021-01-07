@@ -1,6 +1,5 @@
-FROM docker:latest
-
-WORKDIR /root
+FROM google/cloud-sdk:alpine
+# This has docker installed already
 
 # System
 RUN apk update && apk add --no-cache --virtual .build-deps \
