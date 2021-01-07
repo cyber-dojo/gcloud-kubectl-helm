@@ -29,4 +29,5 @@ RUN apk add --no-cache ca-certificates bash git openssh curl \
     && mkdir /config \
     && chmod g+rwx /config
 
+ENTRYPOINT []
 CMD [ "/bin/bash" ]
